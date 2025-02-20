@@ -1,0 +1,44 @@
+function string.split(str,delimiter)
+  if str==nil or str=='' or delimiter==nil then
+    return nil
+  end
+  local result = {}
+  for match in (str..delimiter):gmatch("(.-)"..delimiter) do
+    table.insert(result,match)
+  end
+  return result
+end
+
+port = 7777
+ip = "192.168.204.1"
+tcp.client.connect(ip,port)
+recv = ""
+mytable = {}
+tool_pose = {0,0,0}
+tool_ori = rpy2quaternion({0,0,0})
+try = {}
+while(recv ~= "quit") do
+recv=tcp.client.recv_str_data(ip,port)
+	if recv~=""then
+	print(recv)
+	mytable = string.split(recv,",")
+	flag=mytable[1]
+	x=tonumber(mytable[2])
+	y=tonumber(mytable[3])
+	z=tonumber(mytable[4])
+	rx=mytable[5]
+	ry=mytable[6]
+	rz=mytable[7]
+		if(flag=="1")then
+		rx=d2r(rx)
+		ry=d2r(ry)
+		rz=d2r(rz)
+		tmp = {x,y,z}
+		rpy={rx,ry,rz}
+		ori=rpy2quaternion(rpy)
+		move_joint(get_target_pose(tmp, ori,false,{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0, 0.0}),true)
+		end
+	end
+sleep(0.5)
+end
+tcp.client.disconnect()
